@@ -98,16 +98,16 @@ class AlbumController {
     }
     
     // MARK: - JSON Codable test methods
-    func testDecodingExampleAlbum() {
-        let url = URL(fileReferenceLiteralResourceName: "exampleAlbum.json")
-        let data = try! Data(contentsOf: url)
-        
-        let album = try! JSONDecoder().decode(Album.self, from: data)
-        
-        print(album)
-    }
-    
-    func testEncodingExampleAlbum() {
-        createAlbum(artist: "Megadeth", coverArt: [], genres: ["Thrash Metal"], name: "Countdown to Extinction", songs: [Song(name: "Symphony of Destruction", duration: "4:06")])
-    }
+//    func testDecodingExampleAlbum() {
+//        let url = URL(fileReferenceLiteralResourceName: "exampleAlbum.json")
+//        let data = try! Data(contentsOf: url)
+//
+//        let album = try! JSONDecoder().decode(Album.self, from: data)
+//
+//        print(album)
+//    }
+//
+//    func testEncodingExampleAlbum() {
+//        createAlbum(artist: "Megadeth", coverArt: [], genres: ["Thrash Metal"], name: "Countdown to Extinction", songs: [Song(name: "Symphony of Destruction", duration: "4:06")])
+//    }
 }

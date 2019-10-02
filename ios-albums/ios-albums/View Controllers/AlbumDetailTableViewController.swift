@@ -15,19 +15,49 @@ class AlbumDetailTableViewController: UITableViewController {
     @IBOutlet weak var genresTextField: UITextField!
     @IBOutlet weak var coverArtUrlsTextField: UITextField!
     
+    var albumController: AlbumController?
+    var album: Album? {
+        didSet {
+            if isViewLoaded {
+                updateViews()
+            }
+        }
+    }
+    
+    var tempSongs: [Song] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        if isViewLoaded {
+            updateViews()
+        }
     }
     
     @IBAction func save(_ sender: UIBarButtonItem) {
+        guard let albumName = albumNameTextField.text,
+            !albumName.isEmpty,
+            let albumArtistName = artistNameTextField.text,
+            !albumArtistName.isEmpty,
+            let genres = genresTextField.text,
+            !genres.isEmpty,
+            let coverArt = coverArtUrlsTextField.text,
+            !genres.isEmpty else { return }
+        let genresArray: [String] = genres.components(separatedBy: ", ")
+        let coverArtArray: [String] = coverArt.components(separatedBy: ", ")
+        var coverArtURLArray: [URL] = []
+        for url in coverArtArray {
+            if let newURL = URL(string: url) {
+                coverArtURLArray.append(newURL)
+            }
+        }
         
+        if let album = album {
+            albumController?.update(album: album, artist: albumArtistName, coverArt: coverArtURLArray, genres: genresArray, name: albumName, songs: tempSongs)
+        } else {
+            albumController?.createAlbum(artist: albumArtistName, coverArt: coverArtURLArray, genres: genresArray, name: albumName, songs: tempSongs)
+        }
+        
+        navigationController?.popViewController(animated: true)
     }
     
 
@@ -40,62 +70,57 @@ class AlbumDetailTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 0
+        return tempSongs.count + 1
     }
-
-    /*
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "SongCell", for: indexPath) as? SongTableViewCell else { return UITableViewCell() }
+        
+        if !tempSongs.isEmpty {
+            cell.song = tempSongs[indexPath.row]
+        }
+        
+        cell.delegate = self
         return cell
     }
-    */
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "SongCell", for: indexPath) as? SongTableViewCell else { return 100 }
+        
+        if cell.addSongButton.isHidden == true {
+            return 146
+        } else {
+            return 111
+        }
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    func updateViews() {
+        if let album = album {
+            albumNameTextField.text = album.name
+            artistNameTextField.text = album.artist
+            genresTextField.text = album.genres.joined(separator: ", ")
+            var coverArtStrings = ""
+            guard let coverArtURLS = album.coverArt else { return }
+            for coverArt in coverArtURLS {
+                coverArtStrings += ", \(coverArt)"
+            }
+            coverArtUrlsTextField.text = coverArtStrings
+            tempSongs = album.songs
+            self.title = album.name
+        } else {
+            self.title = "New Album"
+        }
     }
-    */
 
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+}
 
+extension AlbumDetailTableViewController: SongTableViewCellDelegate {
+    func addSong(with title: String, duration: String) {
+        guard let indexPath = tableView.indexPathForSelectedRow else { return }
+        
+        guard let newSong = albumController?.createSong(name: title, duration: duration) else { return }
+        tempSongs.append(newSong)
+        tableView.reloadData()
+        tableView.scrollToRow(at: indexPath, at: .middle, animated: true)
     }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

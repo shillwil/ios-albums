@@ -13,7 +13,7 @@ import Foundation
 struct Album: Codable {
     // MARK: - Properties
     var artist: String
-    var coverArt: [URL]
+    var coverArt: [URL]?
     var genres: [String]
     var id: String
     var name: String
@@ -92,6 +92,7 @@ struct Album: Codable {
         try container.encode(genres, forKey: .genres)
         
         var coverArtContainer = container.nestedUnkeyedContainer(forKey: .coverArt)
+        guard let coverArt = coverArt else { return }
         for url in coverArt {
             var coverArtUrlsContainer = coverArtContainer.nestedContainer(keyedBy: AlbumKeys.CoverArtKeys.self)
             try coverArtUrlsContainer.encode(url, forKey: .url)
